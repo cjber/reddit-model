@@ -93,7 +93,7 @@ def run(
         model.tokenizer.push_to_hub("cjber/reddit-ner-place_names")
     else:
         test = trainer.test(model=model, ckpt_path="best", datamodule=testmodule)
-        pd.DataFrame(test).to_csv(f"logs/seed_{seed}_{name[0]}_test.csv")
+        pd.DataFrame(test).to_csv(f"logs/seed_{seed}_{name}_test.csv")
     csv_logger.save()
 
 
