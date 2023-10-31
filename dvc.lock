@@ -1,0 +1,19 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/doccano_annotated.jsonl
+      hash: md5
+      md5: 4f343a7167f51504746c859fe2cd4a11
+      size: 237563
+    - path: src/train.py
+      hash: md5
+      md5: 368d1e4aaa4352f25be23e94513c0214
+      size: 3376
+    outs:
+    - path: logs
+      hash: md5
+      md5: 680840eb5936e001d72e88c6d9cbd1b5.dir
+      size: 1306998820
+      nfiles: 4
