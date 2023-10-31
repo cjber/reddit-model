@@ -67,13 +67,13 @@ def run(
     csv_logger = CSVLogger(save_dir="logs", name=f"seed_{seed}", version=name)
     mlflow_logger = MLFlowLogger(
         experiment_name=f"Dataset: {args.dataset}, NER Model",
-        tracking_uri="https://dagshub.com/cjber/reddit-connectivity.mlflow",
+        tracking_uri="https://dagshub.com/cjber/reddit-model.mlflow",
     )
 
     if args.fast_dev_run:
         trainer_kwargs = {"accelerator": "cpu"}
     else:
-        trainer_kwargs = {"accelerator": "cuda", "precision": 16}
+        trainer_kwargs = {"accelerator": "cuda", "precision": "16-mixed"}
 
     trainer: pl.Trainer = pl.Trainer(
         **trainer_kwargs,
