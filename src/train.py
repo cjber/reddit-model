@@ -5,7 +5,7 @@ import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning import Callback, seed_everything
 from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
-from pytorch_lightning.loggers import CSVLogger, MLFlowLogger
+from pytorch_lightning.loggers import CSVLogger, MLFlowLogger, ModelCheckpoint
 
 from src.common.utils import Paths
 from src.pl_data.conll_dataset import CONLLDataset
@@ -36,6 +36,13 @@ def build_callbacks() -> list[Callback]:
             verbose=True,
             min_delta=0.0,
             patience=3,
+        ),
+        ModelCheckpoint(
+            monitor="val_loss",
+            mode="min",
+            verbose=True,
+            filename="{epoch:02d}-{val_loss:.2f}",
+            save_top_k=1,
         ),
     ]
 
