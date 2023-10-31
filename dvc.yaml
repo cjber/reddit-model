@@ -1,0 +1,17 @@
+stages:
+  train:
+    cmd: python -m src.train
+    deps:
+    - data/doccano_annotated.jsonl
+
+    - src/train.py
+    outs:
+    - logs
+    frozen: false
+  upload:
+    cmd: python -m src.train --upload=true
+    deps:
+      - data/doccano_annotated.jsonl
+
+      - src/train.py
+    frozen: true
