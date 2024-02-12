@@ -1,6 +1,6 @@
 import torch
 from seqeval.metrics import classification_report
-from seqeval.scheme import BILOU, IOB2
+from seqeval.scheme import IOB2
 from torchmetrics import Metric
 
 from src.common.utils import Label
@@ -32,10 +32,9 @@ class Seqeval(Metric):
             y_true=target_biluo,
             y_pred=pred_biluo,
             mode="strict",
-            # scheme=BILOU,
             scheme=IOB2,
             output_dict=True,
-            zero_division=1,
+            zero_division=0,
         )
 
         self.f1 += report["micro avg"]["f1-score"]
