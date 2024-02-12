@@ -10,7 +10,6 @@ dependencies = [
     "datasets>=2.14.6",
     "spacy>=3.7.2",
     "seqeval>=1.2.2",
-    "ipython>=8.17.2",
     "dvc>=3.28.0",
     "polars>=0.19.12",
     "beautifulsoup4>=4.12.2",
@@ -18,8 +17,16 @@ dependencies = [
     "jsonlines>=4.0.0",
     "transformers>=4.34.1",
     "mlflow>=2.8.0",
+    "dagshub>=0.3.13",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.8.0",
+    "ipdb>=0.13.13",
+    "ipython>=8.17.2",
+    "pip>=24.0",
+]
