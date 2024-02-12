@@ -4,7 +4,6 @@ from datasets import concatenate_datasets
 from datasets.load import load_dataset
 from spacy.lang.en import English
 from spacy.training import offsets_to_biluo_tags
-from spacy.training.iob_utils import iob_to_biluo
 from torch.utils.data import Dataset
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.tokenization_utils import PreTrainedTokenizer
@@ -36,16 +35,14 @@ class CONLLDataset(Dataset):
 
     def load_conll(self):
         conll = load_dataset(self.name)
-
         conll = concatenate_datasets(
             [conll["train"], conll["validation"], conll["test"]]
         )
 
-        return (
-            conll.map(self.use_loc)
-            # .map(self.normalise)
-            .map(self.tokenize_and_align_labels)
-        )
+        if self.name == "tner/ontonotes5":
+            conll = conll.rename_columns({"tags": "ner_tags"})
+
+        return conll.map(self.use_loc).map(self.tokenize_and_align_labels)
 
     def load_doccano(self):
         nlp = English()
@@ -116,7 +113,22 @@ class CONLLDataset(Dataset):
                 else:
                     new_tag = 0
                 new_tags.append(new_tag)
-
+            elif self.name == "tner/ontonotes5":
+                if tag == 7:
+                    new_tag = 1
+                elif tag == 8:
+                    new_tag = 2
+                elif tag == 20:
+                    new_tag = 1
+                elif tag == 32:
+                    new_tag = 2
+                elif tag == 23:
+                    new_tag = 1
+                elif tag == 27:
+                    new_tag = 2
+                else:
+                    new_tag = 0
+                new_tags.append(new_tag)
         example["ner_tags"] = new_tags
         return example
 
@@ -135,10 +147,4 @@ class CONLLDataset(Dataset):
     @staticmethod
     def normalise(example: dict[str, list[str]]) -> dict[str, list[str]]:
         example["tokens"] = [remove_markdown(token) for token in example["tokens"]]
-        return example
-
-    @staticmethod
-    def to_biluo(example: dict[str, list[int]]) -> dict[str, list[int]]:
-        tags = [Label.idx[tag] for tag in example["ner_tags"]]
-        example["ner_tags"] = [Label.labels[tag] for tag in iob_to_biluo(tags)]
         return example
