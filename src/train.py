@@ -4,8 +4,13 @@ from argparse import ArgumentParser
 import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning import Callback, seed_everything
-from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
-from pytorch_lightning.loggers import CSVLogger, MLFlowLogger, ModelCheckpoint
+from pytorch_lightning.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+    Timer,
+)
+from pytorch_lightning.loggers import CSVLogger, MLFlowLogger
 
 from src.common.utils import Paths
 from src.pl_data.conll_dataset import CONLLDataset
@@ -31,19 +36,20 @@ def build_callbacks() -> list[Callback]:
             log_momentum=False,
         ),
         EarlyStopping(
-            monitor="val_loss",
-            mode="min",
+            monitor="val_f1",
+            mode="max",
             verbose=True,
             min_delta=0.0,
             patience=3,
         ),
         ModelCheckpoint(
-            monitor="val_loss",
-            mode="min",
+            monitor="val_f1",
+            mode="max",
             verbose=True,
             filename="{epoch:02d}-{val_loss:.2f}",
             save_top_k=1,
         ),
+        Timer(verbose=False),
     ]
 
 
@@ -51,7 +57,7 @@ def run(
     dataset,
     testdataset,
     pl_model: pl.LightningModule,
-    name: str,
+    name: set[str],
     seed: int,
     args=args,
 ) -> None:
@@ -88,9 +94,8 @@ def run(
         deterministic=True,
         default_root_dir="ckpts",
         logger=[csv_logger, mlflow_logger],
-        log_every_n_steps=10,
         callbacks=callbacks,
-        max_epochs=5,
+        max_epochs=25,
     )
 
     trainer.fit(model=model, datamodule=datamodule)
@@ -99,8 +104,13 @@ def run(
         model.model.push_to_hub("cjber/reddit-ner-place_names")
         model.tokenizer.push_to_hub("cjber/reddit-ner-place_names")
     else:
+        time_taken = callbacks[3].time_elapsed("train")
+
         test = trainer.test(model=model, ckpt_path="best", datamodule=testmodule)
-        pd.DataFrame(test).to_csv(f"logs/seed_{seed}_{name}_test.csv")
+        csv_logs = pd.DataFrame(test)
+        csv_logs["time_taken"] = time_taken
+        name = list(name)[0].replace("/", "_")
+        csv_logs.to_csv(f"logs/seed_{seed}_{name}_test.csv")
     csv_logger.save()
 
 
