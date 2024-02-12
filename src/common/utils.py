@@ -12,7 +12,6 @@ pl.Config.set_tbl_rows(6)
 
 
 class Paths:
-    RAW_DATA = Path(os.environ["DATA_DIR"])
     DATA = Path("data")
 
 
